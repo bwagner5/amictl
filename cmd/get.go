@@ -22,8 +22,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
-	"github.com/bwagner5/amictl/pkg/amis"
 	"github.com/spf13/cobra"
+
+	"github.com/bwagner5/amictl/pkg/amis"
 )
 
 type GetOptions struct {
