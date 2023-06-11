@@ -15,8 +15,14 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
 	"os"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/imdario/mergo"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
@@ -68,4 +74,23 @@ func ParseConfig[T any](globalOpts GlobalOptions, opts T) (T, error) {
 		return opts, err
 	}
 	return opts, nil
+}
+
+func getAWSConfgOrDie(ctx context.Context) aws.Config {
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		fmt.Printf("unable to load SDK config, %v", err)
+		os.Exit(1)
+	}
+	return cfg
+}
+
+func PrettyEncode(data interface{}) string {
+	var buffer bytes.Buffer
+	enc := json.NewEncoder(&buffer)
+	enc.SetIndent("", "    ")
+	if err := enc.Encode(data); err != nil {
+		panic(err)
+	}
+	return buffer.String()
 }
