@@ -55,7 +55,7 @@ Debian / Ubuntu:
 ```
 [[ `uname -m` == "aarch64" ]] && ARCH="arm64" || ARCH="amd64"
 OS=`uname | tr '[:upper:]' '[:lower:]'`
-wget https://github.com/bwagner5/amictl/releases/download/v0.0.1/amictl_0.0.1_${OS}_${ARCH}.deb
+wget https://github.com/bwagner5/amictl/releases/download/v0.0.2/amictl_0.0.2_${OS}_${ARCH}.deb
 dpkg --install amictl_0.0.2_linux_amd64.deb
 amictl --help
 ```
@@ -65,7 +65,7 @@ RedHat:
 ```
 [[ `uname -m` == "aarch64" ]] && ARCH="arm64" || ARCH="amd64"
 OS=`uname | tr '[:upper:]' '[:lower:]'`
-rpm -i https://github.com/bwagner5/amictl/releases/download/v0.0.1/amictl_0.0.1_${OS}_${ARCH}.rpm
+rpm -i https://github.com/bwagner5/amictl/releases/download/v0.0.2/amictl_0.0.2_${OS}_${ARCH}.rpm
 ```
 
 Download Binary Directly:
@@ -73,7 +73,7 @@ Download Binary Directly:
 ```
 [[ `uname -m` == "aarch64" ]] && ARCH="arm64" || ARCH="amd64"
 OS=`uname | tr '[:upper:]' '[:lower:]'`
-wget -qO- https://github.com/bwagner5/amictl/releases/download/v0.0.1/amictl_0.0.1_${OS}_${ARCH}.tar.gz | tar xvz
+wget -qO- https://github.com/bwagner5/amictl/releases/download/v0.0.2/amictl_0.0.2_${OS}_${ARCH}.tar.gz | tar xvz
 chmod +x amictl
 ```
 
