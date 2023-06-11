@@ -94,7 +94,7 @@ var (
 						Alias:         image.Alias,
 						AMIID:         *image.ImageId,
 						Arch:          lo.Ternary(string(image.Architecture) == "x86_64", "x86_64 / amd64", string(image.Architecture)),
-						OS:            string(image.OS),
+						OS:            image.OS,
 						GPUCompatible: lo.Ternary(image.GPUCompatible, "yes", "no"),
 						Region:        cfg.Region,
 					}
