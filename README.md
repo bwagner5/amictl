@@ -1,15 +1,45 @@
 # amictl
 
-DESCRIPTION HERE
+AMIs can be tricky to work with. AMI IDs are difficult to find and remember. SSM Aliases to AMI IDs are long paths that aren't very intuitive to remember or construct. On top of that, working with AMIs for K8s adds another dimension of complexity.
+
+`amictl` aims to make looking up AMI information easy by providing some easy aliases and standardized query filters to lookup AMIs for EKS Optimized AL2, Bottlerocket, Ubuntu, and Windows.
 
 ## Usage:
 
-
 ```
-Put Usage here
 Usage:
   amictl [command]
-...
+
+Available Commands:
+  get         finds information about an ami
+  help        Help about any command
+
+Flags:
+  -f, --file string   YAML Config File
+  -h, --help          help for amictl
+      --verbose       Verbose output
+      --version       version
+
+Use "amictl [command] --help" for more information about a command.
+```
+
+```
+Finds information about an AMI. Valid AMI aliases are: [eks-al2 eks-bottlerocket eks-ubuntu eks-windows]
+
+Usage:
+  amictl get [ami or alias] [flags]
+
+Flags:
+  -a, --ami-version string   AMI Version; if empty use latest (i.e. v20230607 for eks-al2 or 1.6 for Bottlerocket)
+  -c, --cpu-arch string      CPU Architecture [amd64 or arm64]
+  -g, --gpu-compatible       GPU Compatible
+  -h, --help                 help for get
+  -k, --k8s-version string   K8s Major Minor version (i.e. 1.27)
+
+Global Flags:
+  -f, --file string   YAML Config File
+      --verbose       Verbose output
+      --version       version
 ```
 
 ## Installation:
@@ -49,4 +79,58 @@ chmod +x amictl
 
 ## Examples: 
 
-EXAMPLES HERE
+
+```
+## Get the latest released EKS Optimized AL2 AMIs (arm64 and amd64) w/ the latest version of K8s
+> amictl get eks-al2
+[
+    {
+        "Architecture": "arm64",
+        "BlockDeviceMappings": [
+            {
+                "DeviceName": "/dev/xvda",
+                "Ebs": {
+                    "DeleteOnTermination": true,
+                    "Encrypted": false,
+                    "Iops": null,
+                    "KmsKeyId": null,
+                    "OutpostArn": null,
+                    "SnapshotId": "snap-08574db993db823a7",
+                    "Throughput": null,
+                    "VolumeSize": 20,
+                    "VolumeType": "gp2"
+                },
+                "NoDevice": null,
+                "VirtualName": null
+            }
+        ],
+        "BootMode": "uefi",
+```
+
+```
+## Get a specific version of the EKS Optimized AL2 AMIs w/ a specific CPU arch and K8s version
+> amictl get eks-al2 --ami-version v20230607 --cpu-arch arm64 --k8s-version 1.27
+[
+    {
+        "Architecture": "arm64",
+        "BlockDeviceMappings": [
+            {
+                "DeviceName": "/dev/xvda",
+                "Ebs": {
+                    "DeleteOnTermination": true,
+                    "Encrypted": false,
+                    "Iops": null,
+                    "KmsKeyId": null,
+                    "OutpostArn": null,
+                    "SnapshotId": "snap-08574db993db823a7",
+                    "Throughput": null,
+                    "VolumeSize": 20,
+                    "VolumeType": "gp2"
+                },
+                "NoDevice": null,
+                "VirtualName": null
+            }
+        ],
+        "BootMode": "uefi",
+```
+

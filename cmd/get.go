@@ -20,6 +20,7 @@ import (
 	"regexp"
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/eks"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/bwagner5/amictl/pkg/amis"
 	"github.com/spf13/cobra"
@@ -48,6 +49,7 @@ var (
 			cfg := getAWSConfgOrDie(cmd.Context())
 			ec2Client := ec2.NewFromConfig(cfg)
 			ssmClient := ssm.NewFromConfig(cfg)
+			eksClient := eks.NewFromConfig(cfg)
 			query := amis.Query{
 				K8sMajorMinorVersion: getOpts.K8sMajorMinorVersion,
 				Architecture:         getOpts.Architecture,
@@ -59,7 +61,7 @@ var (
 			} else {
 				query.Alias = args[0]
 			}
-			images, err := amis.New(ec2Client, ssmClient).Get(cmd.Context(), query)
+			images, err := amis.New(ec2Client, ssmClient, eksClient).Get(cmd.Context(), query)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)

@@ -3,6 +3,7 @@ package amis
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -41,10 +42,11 @@ type Query struct {
 	GPUCompatible        bool
 }
 
-func New(ec2Client *ec2.Client, ssmClient *ssm.Client) *Client {
+func New(ec2Client *ec2.Client, ssmClient *ssm.Client, eksClient *eks.Client) *Client {
 	return &Client{
 		ec2Client: ec2Client,
 		ssmClient: ssmClient,
+		eksClient: eksClient,
 	}
 }
 
@@ -56,6 +58,16 @@ func (c Client) Get(ctx context.Context, query Query) ([]types.Image, error) {
 }
 
 func (c Client) GetByAlias(ctx context.Context, query Query) ([]types.Image, error) {
+	if query.K8sMajorMinorVersion == "" {
+		eksVersions, err := c.EKSSupportedVersions(ctx)
+		if err != nil {
+			return nil, err
+		}
+		if len(eksVersions) == 0 {
+			return nil, fmt.Errorf("unable to discover k8s version")
+		}
+		query.K8sMajorMinorVersion = eksVersions[0]
+	}
 	var resolvedAliases []string
 	switch query.Alias {
 	case EKSAL2Alias:
@@ -77,6 +89,7 @@ func (c Client) GetByAlias(ctx context.Context, query Query) ([]types.Image, err
 		return nil, err
 	}
 	if len(paramsOut.Parameters) == 0 {
+		log.Printf("ALIASES: %v", resolvedAliases)
 		return nil, fmt.Errorf("no AMIs found")
 	}
 	return c.GetByID(ctx, lo.Map(paramsOut.Parameters, func(param ssmtypes.Parameter, _ int) string {
@@ -102,15 +115,24 @@ func (c Client) eksAL2AMISSMPath(query Query) []string {
 		version = query.AMIVersion
 	}
 	if query.GPUCompatible {
-		gpuVersion := fmt.Sprintf("amazon-eks-gpu-node-%s-%s", query.K8sMajorMinorVersion, version)
+		gpuVersion := version
+		if version != "recommended" {
+			gpuVersion = fmt.Sprintf("amazon-eks-gpu-node-%s-%s", query.K8sMajorMinorVersion, version)
+		}
 		return []string{fmt.Sprintf("/aws/service/eks/optimized-ami/%s/amazon-linux-2-gpu/%s/image_id", query.K8sMajorMinorVersion, gpuVersion)}
 	}
 	if query.Architecture == "arm64" || query.Architecture == "" {
-		arm64Version := fmt.Sprintf("amazon-eks-arm64-node-%s-%s", query.K8sMajorMinorVersion, version)
+		arm64Version := version
+		if version != "recommended" {
+			arm64Version = fmt.Sprintf("amazon-eks-arm64-node-%s-%s", query.K8sMajorMinorVersion, version)
+		}
 		aliases = append(aliases, fmt.Sprintf("/aws/service/eks/optimized-ami/%s/amazon-linux-2-arm64/%s/image_id", query.K8sMajorMinorVersion, arm64Version))
 	}
 	if query.Architecture == "amd64" || query.Architecture == "" {
-		amd64Version := fmt.Sprintf("amazon-eks-node-%s-%s", query.K8sMajorMinorVersion, version)
+		amd64Version := version
+		if version != "recommended" {
+			amd64Version = fmt.Sprintf("amazon-eks-node-%s-%s", query.K8sMajorMinorVersion, version)
+		}
 		aliases = append(aliases, fmt.Sprintf("/aws/service/eks/optimized-ami/%s/amazon-linux-2/%s/image_id", query.K8sMajorMinorVersion, amd64Version))
 	}
 	return aliases
