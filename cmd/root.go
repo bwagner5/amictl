@@ -36,7 +36,7 @@ type GlobalOptions struct {
 var (
 	globalOpts = GlobalOptions{}
 	rootCmd    = &cobra.Command{
-		Use:     "go-cli-template",
+		Use:     "amictl",
 		Version: version,
 	}
 )

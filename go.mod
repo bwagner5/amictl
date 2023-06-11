@@ -1,4 +1,4 @@
-module github.com/bwagner5/go-cli-template
+module github.com/bwagner5/amictl
 
 go 1.20
 
