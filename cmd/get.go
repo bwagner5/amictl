@@ -18,10 +18,13 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"sort"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
+	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 
 	"github.com/bwagner5/amictl/pkg/amis"
@@ -32,6 +35,18 @@ type GetOptions struct {
 	Architecture         string
 	AMIVersion           string
 	GPUCompataible       bool
+}
+
+type GetTableOutput struct {
+	Name          string `table:"name"`
+	Alias         string `table:"alias"`
+	Version       string `table:"version"`
+	AMIID         string `table:"ami-id"`
+	Arch          string `table:"architecture"`
+	GPUCompatible string `table:"gpu compatible,wide"`
+	K8sVersion    string `table:"k8s version,wide"`
+	OS            string `table:"os,wide"`
+	Region        string `table:"region,wide"`
 }
 
 var (
@@ -54,7 +69,7 @@ var (
 			query := amis.Query{
 				K8sMajorMinorVersion: getOpts.K8sMajorMinorVersion,
 				Architecture:         getOpts.Architecture,
-				GPUCompatible:        getOpts.GPUCompataible,
+				GPUCompatible:        lo.Ternary(cmd.Flag("gpu-compatible").Changed, lo.ToPtr(getOpts.GPUCompataible), nil),
 				AMIVersion:           getOpts.AMIVersion,
 			}
 			if idRE.MatchString(args[0]) {
@@ -67,7 +82,31 @@ var (
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			fmt.Println(PrettyEncode(images))
+			switch globalOpts.Output {
+			case OutputYAML:
+				fmt.Println(PrettyEncode(images))
+			case OutputTableShort, OutputTableWide:
+				rows := lo.Map(images, func(image amis.ImageOutput, _ int) GetTableOutput {
+					return GetTableOutput{
+						Name:          *image.Name,
+						Version:       image.Version,
+						K8sVersion:    image.K8sVersion,
+						Alias:         image.Alias,
+						AMIID:         *image.ImageId,
+						Arch:          lo.Ternary(string(image.Architecture) == "x86_64", "x86_64 / amd64", string(image.Architecture)),
+						OS:            string(image.OS),
+						GPUCompatible: lo.Ternary(image.GPUCompatible, "yes", "no"),
+						Region:        cfg.Region,
+					}
+				})
+				sort.SliceStable(rows, func(i, j int) bool {
+					return strings.ToLower(rows[i].Name) < strings.ToLower(rows[j].Name)
+				})
+				fmt.Println(PrettyTable(rows, globalOpts.Output == OutputTableWide))
+			default:
+				fmt.Printf("unknown output options %s\n", globalOpts.Output)
+				os.Exit(1)
+			}
 		},
 	}
 )

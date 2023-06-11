@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/eks v1.27.12
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.36.4
 	github.com/imdario/mergo v0.3.16
+	github.com/olekukonko/tablewriter v0.0.5
 	github.com/samber/lo v1.38.1
 	github.com/spf13/cobra v1.7.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -29,6 +30,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
+	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
